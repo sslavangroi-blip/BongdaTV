@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Bóng Đá TV</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: radial-gradient(circle at top, #202020 0%, #050505 62%, #000 100%);
+      color: #fff;
+      font-family: Arial, Helvetica, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .card {
+      width: min(92vw, 980px);
+      padding: 48px;
+      border-radius: 34px;
+      background: rgba(255,255,255,.08);
+      border: 2px solid rgba(255,255,255,.16);
+      box-shadow: 0 0 50px rgba(255, 212, 0, .12);
+    }
+    .logo {
+      font-size: clamp(46px, 7vw, 88px);
+      font-weight: 900;
+      letter-spacing: 1px;
+      margin-bottom: 14px;
+      color: #ffd400;
+      text-shadow: 0 0 20px rgba(255, 212, 0, .35);
+    }
+    .sub {
+      font-size: clamp(22px, 3vw, 34px);
+      opacity: .9;
+      margin: 0 0 34px;
+    }
+    button {
+      font-size: clamp(28px, 4vw, 52px);
+      font-weight: 800;
+      padding: 26px 58px;
+      border-radius: 24px;
+      border: 0;
+      color: #111;
+      background: linear-gradient(180deg, #fff176, #ffd400);
+      cursor: pointer;
+      box-shadow: 0 12px 0 #9b7d00, 0 0 40px rgba(255, 212, 0, .28);
+      min-width: min(78vw, 720px);
+    }
+    button:focus {
+      outline: 8px solid #fff;
+      outline-offset: 8px;
+    }
+    .hint {
+      margin-top: 32px;
+      font-size: clamp(18px, 2.1vw, 26px);
+      opacity: .7;
+    }
+    .error {
+      color: #ff8080;
+      font-size: clamp(20px, 2.5vw, 30px);
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <div class="logo">BÓNG ĐÁ TV</div>
+    <p class="sub">Đọc link từ file JSON</p>
+    <button id="openBtn" autofocus>Đang tải...</button>
+    <div id="msg" class="hint">Bấm OK / Enter trên remote để mở</div>
+  </main>
+
+  <script>
+    async function loadLink() {
+      const btn = document.getElementById('openBtn');
+      const msg = document.getElementById('msg');
+      try {
+        const res = await fetch('./channels.json?time=' + Date.now());
+        if (!res.ok) throw new Error('Không đọc được channels.json');
+        const data = await res.json();
+        const item = Array.isArray(data) ? data[0] : data;
+        if (!item || !item.url) throw new Error('channels.json thiếu trường url');
+
+        btn.textContent = item.title || 'Mở link';
+        btn.onclick = function () {
+          window.location.href = item.url;
+        };
+        btn.onkeydown = function (e) {
+          if (e.key === 'Enter') window.location.href = item.url;
+        };
+        msg.textContent = 'Đã sẵn sàng. Bấm OK / Enter để mở.';
+        setTimeout(function(){ btn.focus(); }, 300);
+      } catch (err) {
+        btn.textContent = 'Lỗi';
+        msg.className = 'error';
+        msg.textContent = 'Không tải được link. Kiểm tra file channels.json.\n' + err.message;
+      }
+    }
+    loadLink();
+  </script>
+</body>
+</html>
